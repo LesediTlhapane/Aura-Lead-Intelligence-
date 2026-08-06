@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { StatCard } from '../components/ui/StatCard';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
-import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { formatCurrency, formatRelativeTime } from '../lib/utils';
+import { AIWorkforceWidget } from '../components/ui/AIWorkforceWidget';
+import { ConfidenceMeter } from '../components/ui/ConfidenceMeter';
+import { formatCurrency } from '../lib/utils';
 import {
   DollarSign,
   UserCheck,
@@ -21,6 +22,9 @@ import {
   Building2,
   Activity,
   RefreshCw,
+  Eye,
+  Sliders,
+  Filter,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -30,16 +34,27 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 
 const pipelineChartData = [
-  { month: 'Jan', pipeline: 1200000, aiQualified: 950000 },
-  { month: 'Feb', pipeline: 1650000, aiQualified: 1400000 },
-  { month: 'Mar', pipeline: 2100000, aiQualified: 1850000 },
-  { month: 'Apr', pipeline: 2800000, aiQualified: 2450000 },
-  { month: 'May', pipeline: 3400000, aiQualified: 3100000 },
-  { month: 'Jun', pipeline: 4200000, aiQualified: 3900000 },
-  { month: 'Jul', pipeline: 4850000, aiQualified: 4500000 },
+  { month: 'Jan', pipeline: 1200000, aiQualified: 950000, forecastUpper: 1350000 },
+  { month: 'Feb', pipeline: 1650000, aiQualified: 1400000, forecastUpper: 1800000 },
+  { month: 'Mar', pipeline: 2100000, aiQualified: 1850000, forecastUpper: 2300000 },
+  { month: 'Apr', pipeline: 2800000, aiQualified: 2450000, forecastUpper: 3000000 },
+  { month: 'May', pipeline: 3400000, aiQualified: 3100000, forecastUpper: 3700000 },
+  { month: 'Jun', pipeline: 4200000, aiQualified: 3900000, forecastUpper: 4500000 },
+  { month: 'Jul', pipeline: 4850000, aiQualified: 4500000, forecastUpper: 5200000 },
+];
+
+const intentDistribution = [
+  { name: 'Tier 1 Enterprise ($100k+)', value: 45, color: '#16C5D8' },
+  { name: 'Growth Enterprise ($50k-$100k)', value: 30, color: '#6A4FD9' },
+  { name: 'Mid-Market ($20k-$50k)', value: 25, color: '#E94E97' },
 ];
 
 export const DashboardOverview: React.FC = () => {
@@ -53,25 +68,44 @@ export const DashboardOverview: React.FC = () => {
     currentWorkspace,
   } = useAppStore();
 
+  const [timeRange, setTimeRange] = useState<'30d' | '90d' | 'ytd'>('30d');
+
   return (
     <div className="space-y-6">
-      {/* Executive Welcome & Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#1E3452]/60">
+      {/* Executive Welcome & Actions Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#1E3452]/60">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Executive Intelligence Overview
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#16C5D8] animate-pulse" />
+              Executive Intelligence Command Center
             </h1>
             <Badge variant="cyan" size="sm" dot>
-              LIVE
+              Autonomous Engine Active
             </Badge>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Autonomous AI Employee actively qualifying leads, enriching firmographics & preparing C-level outreach.
+            Real-time revenue orchestration, lead qualification & human-in-the-loop governance.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center bg-[#040B14] p-1 rounded-lg border border-[#1E3452] text-xs font-mono">
+            {(['30d', '90d', 'ytd'] as const).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-3 py-1 rounded-md uppercase transition-all ${
+                  timeRange === range
+                    ? 'bg-[#081426] text-[#16C5D8] font-bold border border-[#16C5D8]/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
           <Button
             variant="secondary"
             size="sm"
@@ -80,11 +114,12 @@ export const DashboardOverview: React.FC = () => {
           >
             Sync CRM
           </Button>
+
           <Button
             variant="primary"
             size="sm"
             glow
-            leftIcon={<Sparkles className="w-3.5 h-3.5 text-[#040B14]" />}
+            leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-[#040B14]" />}
             onClick={() => setActiveModule('approvals')}
           >
             Review {pendingApprovals.length} Approvals
@@ -92,7 +127,10 @@ export const DashboardOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* Top 4 Enterprise Metric Cards */}
+      {/* AI Workforce Autonomous Agent Banner */}
+      <AIWorkforceWidget />
+
+      {/* Top 4 Enterprise Executive Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="ARR Opportunity Scored"
@@ -113,16 +151,16 @@ export const DashboardOverview: React.FC = () => {
           glow="none"
         />
         <StatCard
-          title="AI Employee Accuracy"
+          title="AI Agent Precision"
           value="98.4%"
           change={2.1}
-          changePeriod="confidence rating"
+          changePeriod="confidence score"
           icon={<Sparkles className="w-4 h-4" />}
           iconColor="magenta"
           glow="none"
         />
         <StatCard
-          title="Human Sign-Off Win Rate"
+          title="Human Sign-off Win Rate"
           value="89.2%"
           change={5.3}
           changePeriod="approval conversion"
@@ -132,23 +170,23 @@ export const DashboardOverview: React.FC = () => {
         />
       </div>
 
-      {/* Main Grid: Pipeline Chart & Pending Approval Queue Widget */}
+      {/* Main Grid: Pipeline Chart & Pending Approvals Queue */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left (2 cols): Deal Velocity & AI Qualification Chart */}
+        {/* Left (2 cols): Deal Velocity & AI Pipeline Chart */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-[#16C5D8]" />
-                Qualified Pipeline Growth & Velocity
+                Qualified Pipeline Growth & AI Accuracy Band
               </CardTitle>
               <CardDescription>
-                Comparison of total pipeline vs AI-qualified high intent opportunities ($4.85M total)
+                Historical vs AI-qualified enterprise pipeline ($4.85M total opportunity)
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="cyan" size="sm">
-                Q3 Forecast
+                Q3 Monte Carlo Forecast
               </Badge>
             </div>
           </CardHeader>
@@ -207,7 +245,7 @@ export const DashboardOverview: React.FC = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-3 border-t border-[#1E3452]/50">
+            <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 pt-3 border-t border-[#1E3452]/50">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#16C5D8]" />
@@ -218,21 +256,21 @@ export const DashboardOverview: React.FC = () => {
                   AI Qualified ($4.5M)
                 </span>
               </div>
-              <span className="text-[#16C5D8]">Model: Aura Intelligence v2.4</span>
+              <span className="text-[#16C5D8] font-semibold">Gemini Enterprise Server Engine</span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Right (1 col): Human-in-the-Loop Sign-off Hub Preview */}
+        {/* Right (1 col): High-Value Approval Queue Preview */}
         <Card className="flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-amber-400" />
-                Human Approval Queue
+                Human Approval Sign-off
               </CardTitle>
               <CardDescription>
-                AI employee actions waiting for executive sign-off
+                High value actions requiring human signoff
               </CardDescription>
             </div>
             <Badge variant="warning" size="sm" dot>
@@ -246,14 +284,14 @@ export const DashboardOverview: React.FC = () => {
                 {pendingApprovals.slice(0, 2).map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl bg-[#040B14] border border-[#1E3452] space-y-2 hover:border-[#16C5D8]/40 transition-colors"
+                    className="p-3.5 rounded-xl bg-[#040B14] border border-[#1E3452] space-y-2 hover:border-[#16C5D8]/40 transition-colors"
                   >
                     <div className="flex items-start justify-between">
-                      <span className="text-[10px] font-mono text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[10px] font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
                         {item.category}
                       </span>
-                      <span className="text-[10px] font-mono text-[#16C5D8]">
-                        {item.confidenceScore}% AI Conf
+                      <span className="text-[10px] font-mono text-[#16C5D8] font-bold">
+                        {item.confidenceScore}% Conf
                       </span>
                     </div>
 
@@ -264,8 +302,8 @@ export const DashboardOverview: React.FC = () => {
                       <span className="text-emerald-400 font-semibold">{formatCurrency(item.opportunityValue)}</span>
                     </div>
 
-                    <p className="text-[11px] text-slate-400 line-clamp-2 bg-[#081426] p-2 rounded border border-[#1E3452]/40">
-                      {item.aiReasoning}
+                    <p className="text-[11px] text-slate-300 line-clamp-2 bg-[#081426] p-2 rounded border border-[#1E3452]/40">
+                      "{item.aiReasoning}"
                     </p>
 
                     <div className="flex items-center gap-2 pt-1">
@@ -291,8 +329,8 @@ export const DashboardOverview: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-slate-500">
-                All AI employee actions approved.
+              <div className="py-8 text-center text-xs text-slate-500 font-mono">
+                All AI employee actions reviewed & approved.
               </div>
             )}
 
@@ -309,112 +347,110 @@ export const DashboardOverview: React.FC = () => {
         </Card>
       </div>
 
-      {/* Bottom Grid: Live AI Employee Stream & System Health */}
+      {/* Account Tier Intent Breakdown & Live Activity Stream */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left (2 cols): Autonomous AI Employee Action Stream */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-[#16C5D8]" />
-                Autonomous AI Execution Log
-              </CardTitle>
-              <CardDescription>
-                Real-time activity stream of background enrichment, scoring & workflow executions
-              </CardDescription>
-            </div>
-            <StatusIndicator status={aiEmployee.status} size="sm" />
+        {/* Left (1 col): Lead Tier Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#E94E97]" />
+              Account Tier & Value Distribution
+            </CardTitle>
+            <CardDescription>
+              Breakdown of scored leads by ARR opportunity brackets
+            </CardDescription>
           </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="h-48 w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={intentDistribution}
+                    innerRadius={55}
+                    outerRadius={75}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {intentDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#081426',
+                      borderColor: '#1E3452',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '12px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-          <CardContent>
-            <div className="divide-y divide-[#1E3452]/40">
-              {activities.map((act) => (
-                <div key={act.id} className="py-3 first:pt-0 flex items-center justify-between gap-4 text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-[#040B14] border border-[#1E3452] text-[#16C5D8] shrink-0">
-                      <Zap className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-slate-100">{act.action}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">
-                        {act.target} • <span className="text-slate-500">{act.actor}</span>
-                      </div>
-                    </div>
+            <div className="space-y-2">
+              {intentDistribution.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-[#040B14] border border-[#1E3452]/60">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-300 font-medium">{item.name}</span>
                   </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <Badge variant="cyan" size="sm">
-                      {act.type}
-                    </Badge>
-                    <span className="text-[10px] font-mono text-slate-500">{act.timestamp}</span>
-                  </div>
+                  <span className="text-white font-mono font-bold">{item.value}%</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Right (1 col): Tenant Credit Usage & Platform Specs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#6A4FD9]" />
-              Enterprise Workspace Health
-            </CardTitle>
-            <CardDescription>
-              Tenant plan, monthly credit usage & active seats
-            </CardDescription>
+        {/* Right (2 cols): Real-time Execution Log Stream */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#16C5D8]" />
+                Live Execution & Activity Stream
+              </CardTitle>
+              <CardDescription>
+                Audited activity log of lead scoring, technographic enrichment & AI outreach
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveModule('workflows')}
+            >
+              View Full Audit Trail
+            </Button>
           </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="p-3 rounded-xl bg-[#040B14] border border-[#1E3452] space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-mono">Plan Level</span>
-                <Badge variant="purple" size="sm">
-                  {currentWorkspace.plan}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-mono">Domain</span>
-                <span className="text-white font-mono text-[11px]">{currentWorkspace.domain}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-mono">Active Seats</span>
-                <span className="text-white font-mono">{currentWorkspace.activeUsers} Users</span>
-              </div>
+          <CardContent>
+            <div className="divide-y divide-[#1E3452]/40">
+              {activities.map((act) => (
+                <div key={act.id} className="py-3.5 first:pt-0 flex items-center justify-between gap-4 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-[#040B14] border border-[#1E3452] text-[#16C5D8] shrink-0">
+                      <Zap className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">{act.action}</div>
+                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                        {act.target} • <span className="text-slate-500">{act.actor}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 font-mono">
+                    {act.latencyMs && (
+                      <span className="text-[10px] text-slate-500 hidden sm:inline">{act.latencyMs}ms</span>
+                    )}
+                    <Badge variant="cyan" size="sm">
+                      {act.type}
+                    </Badge>
+                    <span className="text-[10px] text-slate-500">{act.timestamp}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {/* Credit usage progress bar */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400">Monthly Intelligence Credits</span>
-                <span className="text-[#16C5D8] font-semibold">
-                  {currentWorkspace.monthlyCreditsUsed.toLocaleString()} / {currentWorkspace.monthlyCreditsLimit.toLocaleString()}
-                </span>
-              </div>
-
-              <div className="h-2 w-full bg-[#040B14] rounded-full border border-[#1E3452] overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#16C5D8] to-[#6A4FD9] rounded-full"
-                  style={{
-                    width: `${(currentWorkspace.monthlyCreditsUsed / currentWorkspace.monthlyCreditsLimit) * 100}%`,
-                  }}
-                />
-              </div>
-
-              <p className="text-[10px] text-slate-500 font-mono text-right">
-                Resets on 1st of next month (84.2% consumed)
-              </p>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => setActiveModule('settings')}
-            >
-              Manage Workspace Settings
-            </Button>
           </CardContent>
         </Card>
       </div>

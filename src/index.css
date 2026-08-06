@@ -1,96 +1,99 @@
 @import "tailwindcss";
 
-@theme {
-  --color-aura-bg: #040B14;
-  --color-aura-card: #081426;
-  --color-aura-card-hover: #0E1E38;
-  --color-aura-border: #1E3452;
-  --color-aura-border-subtle: #12233B;
-  --color-aura-cyan: #16C5D8;
-  --color-aura-purple: #6A4FD9;
-  --color-aura-magenta: #E94E97;
-  --color-aura-orange: #F68B3C;
-  --color-aura-success: #10B981;
-  --color-aura-warning: #F59E0B;
-  --color-aura-danger: #EF4444;
-
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  --radius-aura: 12px;
-}
-
 @layer base {
-  * {
-    border-color: #1E3452;
+  :root {
+    --bg-primary: #030712;
+    --bg-secondary: #0B0F19;
+    --bg-card: #0F172A;
+    --border-color: rgba(30, 58, 138, 0.25);
+    --border-glow: rgba(56, 189, 248, 0.3);
   }
+
   body {
-    background-color: #040B14;
-    color: #F1F5F9;
-    font-family: var(--font-sans);
+    background-color: #020617;
+    color: #F8FAFC;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
   }
 }
 
-/* Custom scrollbars */
+/* Enterprise Glass & Glow Effects */
+.aura-glass {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.aura-glass-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.5) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.aura-glass-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 12px 35px -10px rgba(56, 189, 248, 0.15);
+}
+
+.aura-glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
+}
+
+.aura-glow-pink {
+  box-shadow: 0 0 25px -5px rgba(236, 72, 153, 0.3);
+}
+
+.aura-glow-purple {
+  box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.3);
+}
+
+/* Custom Keyframe Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+/* Custom Scrollbar for Enterprise Tables & Logs */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #040B14;
+  background: #020617;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E3452;
+  background: #1E293B;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #16C5D8;
+  background: #334155;
 }
-
-/* Custom visual utility classes */
-.aura-glass {
-  background: rgba(8, 20, 38, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 52, 82, 0.6);
-}
-
-.aura-glass-hover:hover {
-  background: rgba(14, 30, 56, 0.85);
-  border-color: rgba(22, 197, 216, 0.4);
-}
-
-.aura-glow-cyan {
-  box-shadow: 0 0 20px -3px rgba(22, 197, 216, 0.25);
-}
-
-.aura-glow-purple {
-  box-shadow: 0 0 20px -3px rgba(106, 79, 217, 0.25);
-}
-
-.aura-glow-magenta {
-  box-shadow: 0 0 20px -3px rgba(233, 78, 151, 0.25);
-}
-
-.aura-border-gradient {
-  border-image: linear-gradient(to right, #16C5D8, #6A4FD9) 1;
-}
-
-.aura-card-radius {
-  border-radius: 12px;
-}
-
-/* Animation keyframes */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(0.99); }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
