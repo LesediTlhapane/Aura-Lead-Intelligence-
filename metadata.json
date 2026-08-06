@@ -1,0 +1,6 @@
+{
+  "name": "Aura Lead Intelligence",
+  "description": "Enterprise AI-powered sales intelligence platform with autonomous enrichment, lead scoring, and human-in-the-loop workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
